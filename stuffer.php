@@ -7,22 +7,19 @@
   $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
   $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-
-// $docket = '14-28';
-// //$docket = '10-127';
-
-// $cookie = getcookie($docket);
-// postcomment($cookie, $docket, NULL);
-
 // Set path to CSV file
 $csvFile = 'docketcomments.csv';
 $csv = readCSV($csvFile);
 
-print "<pre>";
-print_r($csv);
-print "</pre>";
+// print "<pre>";
+// print_r($csv);
+// print "</pre>";
 
-print "submitting  14-28 \n";
+print "begin 14-28 \n";
+
+$n = 0;
+$a = 0;
+
 foreach ($csv as $key => $row) {
   $docket = '14-28';
   // if confirmation row in csv is blank
@@ -34,13 +31,22 @@ foreach ($csv as $key => $row) {
   if ($db_row == '') {
     $cookie = getcookie($docket);
     postcomment($cookie, $docket, $row);
+    ++$n;
   } else {
     print "row has already been submitted";
+    ++$a;
   }
+  print "Number of comments submitted to 14-28: " . $n . "\n";
+  print "Number of comments skipped because they've been submitted to 14-28: " . $a . "\n";
 
 }
 
+
 print "begin 10-127 \n";
+
+$n = 0;
+$a = 0;
+
 foreach ($csv as $key => $row) {
   $docket = '10-127';
   
@@ -53,9 +59,14 @@ foreach ($csv as $key => $row) {
   if ($db_row == '') {
     $cookie = getcookie($docket);
     postcomment($cookie, $docket, $row);
+    ++$n;
   } else {
     print "row has already been submitted";
+    ++$a;
   }
+  print "Number of comments submitted to 10-127: " . $n . "\n";
+  print "Number of comments skipped because they've been submitted to 10-127: " . $a . "\n";
+
 
 }
 
@@ -137,7 +148,7 @@ function postcomment($cookie, $docket, $row) {
 
   foreach ($states as $key => $state) {
     if ($state == $row[5]) {
-      $state = ++$key;
+      $state_code = ++$key;
     }
   }
 
@@ -145,7 +156,7 @@ function postcomment($cookie, $docket, $row) {
     http_build_query(array('action%3Aprocess' => "Continue",
                            'briefComment' => $row[7],
                            'address.zip' => $row[6],
-                           'address.state.id' => $state,
+                           'address.state.id' => $state_code,
                            'address.city' => $row[4],
                            'address.line1' => $row[3],
                            'applicant' => $row[1] . " " . $row[2],
@@ -181,7 +192,6 @@ function postcomment($cookie, $docket, $row) {
 
   $conf_string = strstr($curl_response, "Confirmation number: ");
 
-
   $confirmation = substr($conf_string, 0, strpos($conf_string, '</h2>'));
   
   if ($docket == '14-28') {
@@ -213,12 +223,11 @@ function postcomment($cookie, $docket, $row) {
                                   'last_name' => $row[2],
                                   'address1' => $row[3],
                                   'city' => $row[4],
-                                  'state' => $state,
+                                  'state' => $state_code,
                                   'zip' => $row[6],
                                   'comment' => $row[7],
                                   'confirmation' => $confirmation,
                                   ));
-    return;
   }
 
   if ($docket == '10-127') {
@@ -250,7 +259,7 @@ function postcomment($cookie, $docket, $row) {
                                   'last_name' => $row[2],
                                   'address1' => $row[3],
                                   'city' => $row[4],
-                                  'state' => $state,
+                                  'state' => $state_code,
                                   'zip' => $row[6],
                                   'comment' => $row[7],
                                   'confirmation' => $confirmation,
