@@ -1,5 +1,15 @@
--- DROP TABLE map;
--- DROP TABLE refresh;
+CREATE TABLE docket_submitted (
+  email VARCHAR(128) NOT NULL,
+  first_name VARCHAR(128) NOT NULL,
+  last_name VARCHAR(128) NOT NULL,
+  address1 VARCHAR(128) NOT NULL,
+  city VARCHAR(128) NOT NULL,
+  state VARCHAR(128) NOT NULL,
+  zip VARCHAR(128) NOT NULL,
+  comment VARCHAR(4096) NOT NULL,
+  confirmation VARCHAR(128),
+  submission_id MEDIUMINT(10) PRIMARY KEY NOT NULL AUTO_INCREMENT
+);
 
 CREATE TABLE docket_submitted_10_127 (
   email VARCHAR(128) NOT NULL,
@@ -9,7 +19,7 @@ CREATE TABLE docket_submitted_10_127 (
   city VARCHAR(128) NOT NULL,
   state VARCHAR(128) NOT NULL,
   zip VARCHAR(128) NOT NULL,
-  comment VARCHAR(128) NOT NULL,
+  comment VARCHAR(4096) NOT NULL,
   confirmation VARCHAR(128),
   submission_id MEDIUMINT(10) PRIMARY KEY NOT NULL AUTO_INCREMENT
 );
