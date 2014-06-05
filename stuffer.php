@@ -33,7 +33,7 @@ foreach ($csv as $key => $row) {
     postcomment($cookie, $docket, $row);
     ++$n;
   } else {
-    print "row has already been submitted";
+    print "row has already been submitted\n";
     ++$a;
   }
   print "Number of comments submitted to 14-28: " . $n . "\n";
@@ -61,7 +61,7 @@ foreach ($csv as $key => $row) {
     postcomment($cookie, $docket, $row);
     ++$n;
   } else {
-    print "row has already been submitted";
+    print "row has already been submitted\n";
     ++$a;
   }
   print "Number of comments submitted to 10-127: " . $n . "\n";
@@ -172,7 +172,7 @@ function postcomment($cookie, $docket, $row) {
   $curl_response = curl_exec($curl);
   curl_close($curl);
   
-  print_r($curl_response);
+  // print_r($curl_response);
 
   // get cofirm/finalization url/token from the previous curl response
   $finalurl = strstr($curl_response, "/ecfs/upload/confirm;jsessionid");
