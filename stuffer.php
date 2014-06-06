@@ -21,6 +21,7 @@ $n = 0;
 $a = 0;
 
 foreach ($csv as $key => $row) {
+  print_r($row[0] . "\n");
   $docket = '14-28';
   // if confirmation row in csv is blank
   $statement = $db->prepare("SELECT email FROM docket_submitted WHERE email = :email");
@@ -150,6 +151,10 @@ function postcomment($cookie, $docket, $row) {
     if ($state == $row[5]) {
       $state_code = ++$key;
     }
+  }
+
+  if (!isset($state_code)) {
+    return;
   }
 
   curl_setopt($curl, CURLOPT_POSTFIELDS, 
