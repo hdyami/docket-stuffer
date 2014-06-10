@@ -150,9 +150,6 @@ function postcomment($cookie, $docket, $row) {
   foreach ($states as $key => $state) {
     if ($state == $row[5]) {
       $state_code = $key;
-      print_r($state . "\n");
-      print_r($state_code . "\n");
-
     }
   }
 
@@ -172,109 +169,109 @@ function postcomment($cookie, $docket, $row) {
                            'procName' => $docket,
                            )));
 
-  // // curl_setopt($curl, CURLOPT_HEADER, true);
-  // curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-  // curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
-  // // curl_setopt($curl, CURLOPT_MAXREDIRS, 1);
-
-  // // submit the row data to the express comment form
-  // $curl_response = curl_exec($curl);
-  // curl_close($curl);
-  
-  // // print_r($curl_response);
-
-  // // get cofirm/finalization url/token from the previous curl response
-  // $finalurl = strstr($curl_response, "/ecfs/upload/confirm;jsessionid");
-  // $newfinalurl = substr($finalurl, 0, strpos($finalurl, '">Confirm </a>'));
-
-  // $curl = curl_init();
-  // curl_setopt($curl, CURLOPT_URL,'http://apps.fcc.gov/'.$newfinalurl);
-  // // curl_setopt($curl, CURLOPT_POST, 1);
-  // curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
   // curl_setopt($curl, CURLOPT_HEADER, true);
+  curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+  curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+  // curl_setopt($curl, CURLOPT_MAXREDIRS, 1);
 
-  // // Final submisison, expect confirmation number
-  // $curl_response = curl_exec($curl);
-  // curl_close($curl);
-
-  // // print_r($curl_response);
-
-  // $conf_string = strstr($curl_response, "Confirmation number: ");
-
-  // $confirmation = substr($conf_string, 0, strpos($conf_string, '</h2>'));
+  // submit the row data to the express comment form
+  $curl_response = curl_exec($curl);
+  curl_close($curl);
   
-  // if ($docket == '14-28') {
+  // print_r($curl_response);
+
+  // get cofirm/finalization url/token from the previous curl response
+  $finalurl = strstr($curl_response, "/ecfs/upload/confirm;jsessionid");
+  $newfinalurl = substr($finalurl, 0, strpos($finalurl, '">Confirm </a>'));
+
+  $curl = curl_init();
+  curl_setopt($curl, CURLOPT_URL,'http://apps.fcc.gov/'.$newfinalurl);
+  // curl_setopt($curl, CURLOPT_POST, 1);
+  curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+  curl_setopt($curl, CURLOPT_HEADER, true);
+
+  // Final submisison, expect confirmation number
+  $curl_response = curl_exec($curl);
+  curl_close($curl);
+
+  // print_r($curl_response);
+
+  $conf_string = strstr($curl_response, "Confirmation number: ");
+
+  $confirmation = substr($conf_string, 0, strpos($conf_string, '</h2>'));
+  
+  if ($docket == '14-28') {
     
-  //   $insertSubmittedDocket = $db->prepare('INSERT INTO docket_submitted (
-  //                                                     email,
-  //                                                     first_name,
-  //                                                     last_name,
-  //                                                     address1,
-  //                                                     city,
-  //                                                     state,
-  //                                                     zip,
-  //                                                     comment,
-  //                                                     confirmation
-  //                                                     ) VALUES (
-  //                                                       :email,
-  //                                                       :first_name,
-  //                                                       :last_name,
-  //                                                       :address1,
-  //                                                       :city,
-  //                                                       :state,
-  //                                                       :zip,
-  //                                                       :comment,
-  //                                                       :confirmation
-  //                                                     )');
+    $insertSubmittedDocket = $db->prepare('INSERT INTO docket_submitted (
+                                                      email,
+                                                      first_name,
+                                                      last_name,
+                                                      address1,
+                                                      city,
+                                                      state,
+                                                      zip,
+                                                      comment,
+                                                      confirmation
+                                                      ) VALUES (
+                                                        :email,
+                                                        :first_name,
+                                                        :last_name,
+                                                        :address1,
+                                                        :city,
+                                                        :state,
+                                                        :zip,
+                                                        :comment,
+                                                        :confirmation
+                                                      )');
 
-  //   $insertSubmittedDocket->execute(array('email' => $row[0],
-  //                                 'first_name' => $row[1],
-  //                                 'last_name' => $row[2],
-  //                                 'address1' => $row[3],
-  //                                 'city' => $row[4],
-  //                                 'state' => $state_code,
-  //                                 'zip' => $row[6],
-  //                                 'comment' => $row[7],
-  //                                 'confirmation' => $confirmation,
-  //                                 ));
-  // }
+    $insertSubmittedDocket->execute(array('email' => $row[0],
+                                  'first_name' => $row[1],
+                                  'last_name' => $row[2],
+                                  'address1' => $row[3],
+                                  'city' => $row[4],
+                                  'state' => $state_code,
+                                  'zip' => $row[6],
+                                  'comment' => $row[7],
+                                  'confirmation' => $confirmation,
+                                  ));
+  }
 
-  // if ($docket == '10-127') {
+  if ($docket == '10-127') {
     
-  //   $insertSubmittedDocket = $db->prepare('INSERT INTO docket_submitted_10_127(
-  //                                                     email,
-  //                                                     first_name,
-  //                                                     last_name,
-  //                                                     address1,
-  //                                                     city,
-  //                                                     state,
-  //                                                     zip,
-  //                                                     comment,
-  //                                                     confirmation
-  //                                                     ) VALUES (
-  //                                                       :email,
-  //                                                       :first_name,
-  //                                                       :last_name,
-  //                                                       :address1,
-  //                                                       :city,
-  //                                                       :state,
-  //                                                       :zip,
-  //                                                       :comment,
-  //                                                       :confirmation
-  //                                                     )');
+    $insertSubmittedDocket = $db->prepare('INSERT INTO docket_submitted_10_127(
+                                                      email,
+                                                      first_name,
+                                                      last_name,
+                                                      address1,
+                                                      city,
+                                                      state,
+                                                      zip,
+                                                      comment,
+                                                      confirmation
+                                                      ) VALUES (
+                                                        :email,
+                                                        :first_name,
+                                                        :last_name,
+                                                        :address1,
+                                                        :city,
+                                                        :state,
+                                                        :zip,
+                                                        :comment,
+                                                        :confirmation
+                                                      )');
 
-  //   $insertSubmittedDocket->execute(array('email' => $row[0],
-  //                                 'first_name' => $row[1],
-  //                                 'last_name' => $row[2],
-  //                                 'address1' => $row[3],
-  //                                 'city' => $row[4],
-  //                                 'state' => $state_code,
-  //                                 'zip' => $row[6],
-  //                                 'comment' => $row[7],
-  //                                 'confirmation' => $confirmation,
-  //                                 ));
-  //   return;
-  // }
+    $insertSubmittedDocket->execute(array('email' => $row[0],
+                                  'first_name' => $row[1],
+                                  'last_name' => $row[2],
+                                  'address1' => $row[3],
+                                  'city' => $row[4],
+                                  'state' => $state_code,
+                                  'zip' => $row[6],
+                                  'comment' => $row[7],
+                                  'confirmation' => $confirmation,
+                                  ));
+    return;
+  }
 }
 
 ?>
