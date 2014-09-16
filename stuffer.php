@@ -11,10 +11,6 @@
 $csvFile = 'docketcomments.csv';
 $csv = readCSV($csvFile);
 
-// print "<pre>";
-// print_r($csv);
-// print "</pre>";
-
 print "begin 14-28 \n";
 
 $n = 0;
@@ -22,26 +18,46 @@ $a = 0;
 
 foreach ($csv as $key => $row) {
   print_r($row[0] . "\n");
+
   $docket = '14-28';
   // if confirmation row in csv is blank
-  $statement = $db->prepare("SELECT email FROM docket_submitted WHERE email = :email");
+  $statement = $db->prepare("SELECT email, confirmation FROM docket_submitted WHERE email = :email");
   $statement->execute(array(':email' => $row[0]));
 
-  $db_row = $statement->fetch();
+  $db_row = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-  if ($db_row == '') {
-    $cookie = getcookie($docket);
-    postcomment($cookie, $docket, $row);
-    ++$n;
-  } else {
+  $entered = False;
+
+  foreach ($db_row as $key => $value) {
+    $entered = True;
+
+    if (empty($value['confirmation'])) {
+      $entered = False;
+    }
+  }
+
+  if ($entered == True) {
     print "row has already been submitted\n";
     ++$a;
+  } else {
+    print "we'll try to submit this row\n";
+
+    $zip_length = strlen((string) $row[6]);
+
+    if ($zip_length == 4) {
+      $row[6] = str_pad($row[6], 5, '0', STR_PAD_LEFT);
+    }
+
+    $cookie = getcookie($docket);
+
+    print postcomment($cookie, $docket, $row);
+    ++$n;
   }
+
   print "Number of comments submitted to 14-28: " . $n . "\n";
   print "Number of comments skipped because they've been submitted to 14-28: " . $a . "\n";
 
 }
-
 
 print "begin 10-127 \n";
 
@@ -49,22 +65,39 @@ $n = 0;
 $a = 0;
 
 foreach ($csv as $key => $row) {
+  print_r($row[0] . "\n");
+  
   $docket = '10-127';
   
   // if confirmation row in csv is blank
-  $statement = $db->prepare("SELECT email FROM docket_submitted_10_127 WHERE email = :email");
+  $statement = $db->prepare("SELECT email, confirmation FROM docket_submitted_10_127 WHERE email = :email");
   $statement->execute(array(':email' => $row[0]));
 
-  $db_row = $statement->fetch();
+  $db_row = $statement->fetchAll(PDO::FETCH_ASSOC);
 
-  if ($db_row == '') {
+  foreach ($db_row as $key => $value) {
+    $entered = True;
+
+    if (empty($value['confirmation'])) {
+      $entered = False;
+    }
+  }
+
+  if ($entered == True) {
+    print "row has already been submitted\n";
+    ++$a;
+  } else {
+    $zip_length = strlen((string) $row[6]);
+
+    if ($zip_length == 4) {
+      $row[6] = str_pad($row[6], 5, '0', STR_PAD_LEFT);
+    }
+
     $cookie = getcookie($docket);
     postcomment($cookie, $docket, $row);
     ++$n;
-  } else {
-    print "row has already been submitted\n";
-    ++$a;
   }
+
   print "Number of comments submitted to 10-127: " . $n . "\n";
   print "Number of comments skipped because they've been submitted to 10-127: " . $a . "\n";
 
@@ -101,7 +134,6 @@ function getcookie($docket) {
 
   preg_match('/^Set-Cookie:\s*([^;]*)/mi', $curl_response, $cookie);
 
-
   if (strstr($curl_response, "Cannot open connection") !== FALSE) {
     sleep(5);
     print "waiting and trying again for cookie";
@@ -130,13 +162,11 @@ function getcookie($docket) {
 
 function postcomment($cookie, $docket, $row) {
   // prepare db connection
-  // we'll cache the queries to stay speedy with prepared statements
+  // we'll cache the queries to stay with prepared statements
   $db = new PDO('mysql:dbname=docket_stuffer;host=localhost;charset=utf8', 'root', '');
 
   $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
   $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-
 
   $curl = curl_init();
 
@@ -150,13 +180,14 @@ function postcomment($cookie, $docket, $row) {
   foreach ($states as $key => $state) {
     if ($state == $row[5]) {
       $state_code = $key;
+    } elseif (is_numeric($row[5])) {
+      $state_code = $row[5];
     }
   }
 
   if (!isset($state_code)) {
     return;
   }
-
 
   curl_setopt($curl, CURLOPT_POSTFIELDS, 
     http_build_query(array('action%3Aprocess' => "Continue",
@@ -177,8 +208,7 @@ function postcomment($cookie, $docket, $row) {
   // submit the row data to the express comment form
   $curl_response = curl_exec($curl);
   curl_close($curl);
-  
-  // print_r($curl_response);
+
 
   // get cofirm/finalization url/token from the previous curl response
   $finalurl = strstr($curl_response, "/ecfs/upload/confirm;jsessionid");
@@ -186,7 +216,7 @@ function postcomment($cookie, $docket, $row) {
 
   $curl = curl_init();
   curl_setopt($curl, CURLOPT_URL,'http://apps.fcc.gov/'.$newfinalurl);
-  // curl_setopt($curl, CURLOPT_POST, 1);
+
   curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
   curl_setopt($curl, CURLOPT_HEADER, true);
 
@@ -194,12 +224,10 @@ function postcomment($cookie, $docket, $row) {
   $curl_response = curl_exec($curl);
   curl_close($curl);
 
-  // print_r($curl_response);
-
   $conf_string = strstr($curl_response, "Confirmation number: ");
 
   $confirmation = substr($conf_string, 0, strpos($conf_string, '</h2>'));
-  
+
   if ($docket == '14-28') {
     
     $insertSubmittedDocket = $db->prepare('INSERT INTO docket_submitted (
@@ -234,6 +262,8 @@ function postcomment($cookie, $docket, $row) {
                                   'comment' => $row[7],
                                   'confirmation' => $confirmation,
                                   ));
+  return "conf: " . $confirmation;
+
   }
 
   if ($docket == '10-127') {
@@ -270,8 +300,8 @@ function postcomment($cookie, $docket, $row) {
                                   'comment' => $row[7],
                                   'confirmation' => $confirmation,
                                   ));
-    return;
   }
+  return "conf: " . $confirmation;
 }
 
 ?>

@@ -1,4 +1,4 @@
-CREATE TABLE docket_submitted (
+CREATE TABLE docket_submitted_14_57 (
   email VARCHAR(128) NOT NULL,
   first_name VARCHAR(128) NOT NULL,
   last_name VARCHAR(128) NOT NULL,
